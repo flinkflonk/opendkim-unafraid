@@ -9753,9 +9753,10 @@ dkimf_apply_signtable(struct msgctx *dfc, DKIMF_DB keydb, DKIMF_DB signdb,
 			                               (ssize_t) -1);
 			if (status != 0 && errkey != NULL)
 				strlcpy(errkey, keyname, errlen);
-			if (status == 1)
+			/* if the key file can't be loaded we just skip it. Fail gracefully, as they say. */
+			if (status == 1 || status == 2)
 				return -2;
-			else if (status == 2 || status == 3 || status == -1)
+			else if (status == 3 || status == -1)
 				return -3;
 
 			nfound++;
