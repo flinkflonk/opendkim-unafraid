@@ -5301,6 +5301,10 @@ dkim_sig_process(DKIM *dkim, DKIM_SIGINFO *sig)
 	size_t diglen = 0;
 #ifdef USE_GNUTLS
 	gnutls_datum_t key;
+#if GNUTLS_VERSION_MAJOR==3
+	gnutls_digest_algorithm_t hash;
+	gnutls_sign_algorithm_t sign_algo;
+#endif
 #else /* USE_GNUTLS */
 	BIO *key;
 #endif /* USE_GNUTLS */
@@ -5441,10 +5445,29 @@ dkim_sig_process(DKIM *dkim, DKIM_SIGINFO *sig)
 
 			return DKIM_STAT_OK;
 		}
-
+#if GNUTLS_VERSION_MAJOR==2
 		rsastat = gnutls_pubkey_verify_hash(rsa->rsa_pubkey, 0,
+											&rsa->rsa_digest,
+											&rsa->rsa_sig);
+#else
+		hash = GNUTLS_DIG_SHA1;
+
+		if (dkim_libfeature(dkim->dkim_libhandle,
+							DKIM_FEATURE_SHA256)) &&
+			sig->sig_hashtype == DKIM_HASHTYPE_SHA256)
+			hash = GNUTLS_DIG_SHA256;
+		sign_algo = gnutls_pk_to_sign(GNUTLS_PK_RSA, hash);
+		if (sign_algo == GNUTLS_SIGN_UNKNOWN)
+		{
+			assert(0);
+			/* NOTREACHED */
+		}
+
+		rsastat = gnutls_pubkey_verify_hash2(rsa->rsa_pubkey,
+											sign_algo, 0,
 		                                    &rsa->rsa_digest,
 		                                    &rsa->rsa_sig);
+#endif
 		if (rsastat < 0)
 			dkim_sig_load_ssl_errors(dkim, sig, rsastat);
 
