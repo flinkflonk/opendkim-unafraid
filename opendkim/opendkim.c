@@ -4725,10 +4725,9 @@ dkimf_securefile(const char *path, ino_t *ino, uid_t myuid, char *err,
 	if (myuid == (uid_t) -1)
 		myuid = pw->pw_uid;
 
-	pthread_mutex_unlock(&pwdb_lock);
-
 #ifdef HAVE_REALPATH
 	strlcpy(myname, pw->pw_name, sizeof myname);
+	pthread_mutex_unlock(&pwdb_lock);
 
 	p = realpath(path, real);
 	if (p == NULL)
@@ -4769,6 +4768,7 @@ dkimf_securefile(const char *path, ino_t *ino, uid_t myuid, char *err,
 #else /* HAVE_REALPATH */
 	struct stat s;
 
+	pthread_mutex_unlock(&pwdb_lock);
 	status = stat(path, &s);
 	if (status != 0)
 		return -1;
