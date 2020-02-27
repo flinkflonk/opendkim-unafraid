@@ -5453,7 +5453,7 @@ dkim_sig_process(DKIM *dkim, DKIM_SIGINFO *sig)
 		hash = GNUTLS_DIG_SHA1;
 
 		if (dkim_libfeature(dkim->dkim_libhandle,
-							DKIM_FEATURE_SHA256)) &&
+							DKIM_FEATURE_SHA256) &&
 			sig->sig_hashtype == DKIM_HASHTYPE_SHA256)
 			hash = GNUTLS_DIG_SHA256;
 		sign_algo = gnutls_pk_to_sign(GNUTLS_PK_RSA, hash);
