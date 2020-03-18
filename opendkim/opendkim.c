@@ -4367,6 +4367,10 @@ dkimf_restart_check(int n, time_t t)
 
 		(void) time(&now);
 
+		if (alen == 0) {
+			syslog(LOG_WARNING, "dkimf_restart_check(): alen is zero, activating failsafe (disabling restart)");
+			return FALSE;
+		}
 		which = (idx - 1) % alen;
 		if (which == -1)
 			which = alen - 1;
