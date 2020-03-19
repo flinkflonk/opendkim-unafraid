@@ -121,9 +121,13 @@ AC_SEARCH_LIBS(getaddrinfo, resolv,
 m4_rename([AC_LANG_CALL], [saved_AC_LANG_CALL])
 m4_define([AC_LANG_CALL], [AC_LANG_PROGRAM([#include <resolv.h>],
                                            [return res_ninit(NULL);])])
-AC_SEARCH_LIBS(res_ninit, resolv,
+# try known defines (glibc, iOS)
+m4_define([DEFINE_HAVE_RES_NINIT], [
                AC_DEFINE(HAVE_RES_NINIT, 1,
-                         [Define to 1 if you have the `res_ninit()' function.]))
+                         [Define to 1 if you have the `res_ninit()' function.])])
+AC_SEARCH_LIBS(res_ninit, resolve, DEFINE_HAVE_RES_NINIT,
+				AC_SEARCH_LIBS(__res_ninit, resolv, DEFINE_HAVE_RES_NINIT,
+						AC_SEARCH_LIBS(res_9_ninit, resolv bind, DEFINE_HAVE_RES_NINIT,)))
 m4_rename_force([saved_AC_LANG_CALL], [AC_LANG_CALL])
 AC_SEARCH_LIBS(res_setservers, resolv bind,
                AC_DEFINE(HAVE_RES_SETSERVERS, 1,
@@ -131,6 +135,12 @@ AC_SEARCH_LIBS(res_setservers, resolv bind,
 AC_SEARCH_LIBS(getopt_long, iberty,
                AC_DEFINE(HAVE_GETOPT_LONG, 1,
                          [Define to 1 if you have the `getopt_long()' function.]))
+AC_SEARCH_LIBS(idn2_to_ascii_8z, idn2,
+				AC_DEFINE(HAVE_LIBIDN2, 1,
+						[Define to 1 if you have libidn2.]),
+				AC_SEARCH_LIBS(idna_to_ascii_8z, idn,
+						AC_DEFINE(HAVE_LIBIDN1, 1,
+								[Define to 1 if you have libidn1.])))
 
 AC_HEADER_RESOLV
 

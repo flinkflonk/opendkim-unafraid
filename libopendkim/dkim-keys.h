@@ -17,4 +17,12 @@ extern DKIM_STAT dkim_get_key_dns __P((DKIM *, DKIM_SIGINFO *, u_char *,
 extern DKIM_STAT dkim_get_key_file __P((DKIM *, DKIM_SIGINFO *, u_char *,
                                         size_t));
 
+#if HAVE_LIBIDN2
+#include <idn2.h>
+#elif HAVE_LIBIDN1
+#include <idna.h>
+#else
+#define EAI_INCOMPATIBLE
+#endif
+
 #endif /* ! _DKIM_KEYS_H_ */

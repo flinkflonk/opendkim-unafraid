@@ -21,6 +21,14 @@
 
 #include "build-config.h"
 
+#if HAVE_LIBIDN2
+#include <idn2.h>
+#elif HAVE_LIBIDN1
+#include <idna.h>
+#else
+#define EAI_INCOMPATIBLE
+#endif
+
 /* libopendkim includes */
 #include "dkim-internal.h"
 #include "dkim-types.h"
@@ -110,6 +118,16 @@ dkim_get_key_dns(DKIM *dkim, DKIM_SIGINFO *sig, u_char *buf, size_t buflen)
 		dkim_error(dkim, "key query name too large");
 		return DKIM_STAT_NORESOURCE;
 	}
+
+#if !defined EAI_INCOMPATIBLE
+	{ // not C99?
+		char *a = NULL;
+		int na = idna_to_ascii_8z(qname, &a, 0);
+		if (na == IDNA_SUCCESS && strlen(a) < sizeof(qname))
+			strcpy(qname, a);
+		free(a);
+	}
+#endif
 
 #ifdef QUERY_CACHE
 	/* see if we have this data already cached */

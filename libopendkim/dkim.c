@@ -543,6 +543,7 @@ dkim_process_set(DKIM *dkim, dkim_set_t type, u_char *str, size_t len,
 
 	for (p = hcopy; *p != '\0'; p++)
 	{
+#if defined EAI_INCOMPATIBLE
 		if (!isascii(*p) || (!isprint(*p) && !isspace(*p)))
 		{
 			dkim_error(dkim,
@@ -554,6 +555,7 @@ dkim_process_set(DKIM *dkim, dkim_set_t type, u_char *str, size_t len,
 				set->set_bad = TRUE;
 			return DKIM_STAT_SYNTAX;
 		}
+#endif
 
 		switch (state)
 		{
@@ -6486,9 +6488,14 @@ dkim_header(DKIM *dkim, u_char *hdr, size_t len)
 				return DKIM_STAT_SYNTAX;
 
 			/* the colon is special */
-			if (hdr[c] == ':')
+			if (hdr[c] == ':') {
 				colon = &hdr[c];
+#if defined EAI_INCOMPATIBLE
+				break;
+#endif
+			}
 		}
+#if defined EAI_INCOMPATIBLE
 		else
 		{
 			/* field bodies are printable ASCII, SP, HT, CR, LF */
@@ -6498,6 +6505,7 @@ dkim_header(DKIM *dkim, u_char *hdr, size_t len)
 			      (hdr[c] >= 32 && hdr[c] <= 126) /* SP, print */ ))
 				return DKIM_STAT_SYNTAX;
 		}
+#endif
 	}
 
 	if (colon == NULL)
