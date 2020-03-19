@@ -21,14 +21,6 @@
 
 #include "build-config.h"
 
-#if HAVE_LIBIDN2
-#include <idn2.h>
-#elif HAVE_LIBIDN1
-#include <idna.h>
-#else
-#define EAI_INCOMPATIBLE
-#endif
-
 /* libopendkim includes */
 #include "dkim-internal.h"
 #include "dkim-types.h"
